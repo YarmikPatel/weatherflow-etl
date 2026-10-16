@@ -1,0 +1,27 @@
+
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Validate Python syntax
+        run: python -m py_compile lambda_function.py
+
+      - name: Test ETL transformation
+        run: |
+          python -c "from lambda_function import process_csv; f=open('sample_data/sample_raw_data.csv', encoding='utf-8-sig'); records,rejected=process_csv(f.read()); assert len(records)==3 and rejected==3; print('ETL test passed')"
